@@ -1,6 +1,6 @@
-# TypeScript Express.js API 02 - Starter
+# Samurai04 API
 
-This is a TypeScript Express.js API project. This is my starter project for all Express.js API projects.
+This is the API for Samurai04. Started from TypeScriptExpressJsAPI02starter.
 
 ## Set up
 
