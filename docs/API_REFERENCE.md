@@ -533,6 +533,164 @@ curl --location 'http://localhost:3000/chat/langflow' \
 
 ---
 
+### POST /chat/receive-response
+
+Receive a response from Langflow and store it in the conversation. This endpoint is typically called by Langflow as a webhook callback after processing a user message. It creates a new message with role "samurai" and writes the response to a file for logging purposes.
+
+**Authentication:** Not required (called by Langflow webhook)
+
+**Content-Type:** `application/json`
+
+**Request Body:**
+```json
+{
+  "conversationId": 1,
+  "responseMessage": "Based on your data, your average sleep in July was 6.8 hours per night."
+}
+```
+
+**Field Descriptions:**
+- `conversationId` (number, required): The ID of the conversation this response belongs to
+- `responseMessage` (string, required): The AI-generated response message from Langflow
+
+**Request Example:**
+```bash
+curl --location 'http://localhost:3000/chat/receive-response' \
+--header 'Content-Type: application/json' \
+--data '{
+  "conversationId": 1,
+  "responseMessage": "Based on your data, your average sleep in July was 6.8 hours per night."
+}'
+```
+
+**Success Response (200 OK):**
+```json
+{
+  "message": "Response received",
+  "conversationId": 1,
+  "messageHistoryArray": [
+    {
+      "role": "user",
+      "content": "What was my average sleep in July?"
+    },
+    {
+      "role": "samurai",
+      "content": "Based on your data, your average sleep in July was 6.8 hours per night."
+    }
+  ]
+}
+```
+
+**Response Field Descriptions:**
+- `message`: Status message indicating successful receipt
+- `conversationId`: The ID of the conversation
+- `messageHistoryArray`: Complete conversation history including the new response
+
+**Error Responses:**
+
+**500 Internal Server Error - Environment Variable Not Set:**
+```json
+{
+  "ok": false,
+  "error": "PATH_TO_PROJECT_RESOURCES env var is not set."
+}
+```
+
+**500 Internal Server Error:**
+```json
+{
+  "ok": false,
+  "error": "Error message details"
+}
+```
+
+**How It Works:**
+
+1. **Receives Response**: Langflow sends the AI-generated response along with the conversation ID
+2. **Creates Message Record**: A new message is created in the database with role "samurai"
+3. **Logs Response**: The response is written to `response.txt` in the PATH_TO_PROJECT_RESOURCES directory
+4. **Returns History**: The complete conversation history is retrieved and returned
+
+**Notes:**
+- This endpoint is designed to be called by Langflow as a webhook callback
+- No authentication is required (webhook-to-webhook communication)
+- The response is both stored in the database and written to a file for logging
+- The role "samurai" distinguishes AI responses from user messages
+- The response file (`response.txt`) is overwritten with each new response
+
+---
+
+### GET /chat/conversation/:conversationId
+
+Retrieve the complete message history for a specific conversation. This endpoint returns all messages (both user and AI responses) for the given conversation ID.
+
+**Authentication:** Required (JWT token)
+
+**URL Parameters:**
+- `conversationId` (required): The ID of the conversation to retrieve
+
+**Request Example:**
+```bash
+curl --location 'http://localhost:3000/chat/conversation/1' \
+--header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+```
+
+**Success Response (200 OK):**
+```json
+{
+  "messageHistoryArray": [
+    {
+      "role": "user",
+      "content": "What was my average sleep in July?"
+    },
+    {
+      "role": "samurai",
+      "content": "Based on your data, your average sleep in July was 6.8 hours per night."
+    },
+    {
+      "role": "user",
+      "content": "How does that compare to June?"
+    },
+    {
+      "role": "samurai",
+      "content": "In June, your average was 7.2 hours per night, so July was about 0.4 hours less."
+    }
+  ]
+}
+```
+
+**Response Field Descriptions:**
+- `messageHistoryArray`: Array of all messages in the conversation
+  - `role`: Either "user" or "samurai" indicating who sent the message
+  - `content`: The message text content
+
+**Error Responses:**
+
+**401 Unauthorized - Invalid Token:**
+```json
+{
+  "ok": false,
+  "error": "Unauthenticated or invalid token."
+}
+```
+
+**500 Internal Server Error:**
+```json
+{
+  "ok": false,
+  "error": "Error message details"
+}
+```
+
+**Notes:**
+- Returns all messages in the conversation, regardless of order (database default ordering)
+- Only includes `role` and `content` fields from messages
+- The authenticated user can access any conversation ID (no ownership validation in current implementation)
+- Returns an empty array if the conversation has no messages
+- Useful for loading conversation history when resuming a chat session
+
+---
+
 ## Environment Variables
 
 The following environment variables must be configured:

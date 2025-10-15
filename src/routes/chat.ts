@@ -147,4 +147,86 @@ router.post("/langflow", authenticateToken, async (req: Request, res: Response) 
 	}
 });
 
+// POST /chat/receive-response - Receive response from Langflow
+router.post("/receive-response", async (req: Request, res: Response) => {
+	const { responseMessage, conversationId } = req.body;
+
+	console.log("- in POST /receive-response");
+	console.log(JSON.stringify(req.body, null, 2));
+
+	try {
+		// Write responseMessage to a text file in the PATH_TO_PROJECT_RESOURCES directory
+		const targetDir = process.env.PATH_TO_PROJECT_RESOURCES;
+		if (!targetDir) {
+			return res.status(500).json({
+				ok: false,
+				error: "PATH_TO_PROJECT_RESOURCES env var is not set.",
+			});
+		}
+
+		// Create new message with role "samurai"
+		const newMessage = await Message.create({
+			conversationId: conversationId,
+			content: responseMessage,
+			role: "samurai",
+		});
+
+		// Get all messages for this conversation
+		const conversationMessagesArray = await Message.findAll({
+			where: { conversationId },
+			attributes: ["role", "content"],
+		});
+
+		const endpointResponse = {
+			message: "Response received",
+			conversationId,
+			messageHistoryArray: conversationMessagesArray,
+		};
+
+		// Write response to file
+		const destPath = path.join(targetDir, "response.txt");
+		fs.writeFileSync(destPath, responseMessage);
+
+		return res.json(endpointResponse);
+	} catch (error) {
+		console.error("Error in /receive-response:", error);
+		return res.status(500).json({
+			ok: false,
+			error: error instanceof Error ? error.message : "Internal server error.",
+		});
+	}
+});
+
+// GET /chat/conversation/:conversationId
+router.get(
+	"/conversation/:conversationId",
+	authenticateToken,
+	async (req: Request, res: Response) => {
+		try {
+			const { conversationId } = req.params;
+			const user = req.user;
+
+			if (!user?.id) {
+				return res
+					.status(401)
+					.json({ ok: false, error: "Unauthenticated or invalid token." });
+			}
+
+			// Get all messages for this conversation
+			const conversationMessagesArray = await Message.findAll({
+				where: { conversationId },
+				attributes: ["role", "content"],
+			});
+
+			return res.json({ messageHistoryArray: conversationMessagesArray });
+		} catch (error) {
+			console.error("Error retrieving conversation:", error);
+			return res.status(500).json({
+				ok: false,
+				error: error instanceof Error ? error.message : "Internal server error.",
+			});
+		}
+	}
+);
+
 export default router;

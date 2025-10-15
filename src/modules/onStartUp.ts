@@ -7,6 +7,7 @@ export function verifyCheckDirectoryExists(): void {
 	const pathsToCheck = [
 		process.env.PATH_DATABASE,
 		process.env.PATH_PROJECT_RESOURCES,
+		process.env.PATH_TO_PROJECT_RESOURCES,
 		process.env.PATH_TO_USER_CONTEXT_DATA,
 	].filter((path): path is string => typeof path === "string");
 
