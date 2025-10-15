@@ -12,6 +12,7 @@
 	"author": "",
 	"license": "ISC",
 	"dependencies": {
+		"@types/papaparse": "^5.3.16",
 		"bcrypt": "^6.0.0",
 		"cookie-parser": "^1.4.7",
 		"cors": "^2.8.5",
@@ -20,6 +21,7 @@
 		"jsonwebtoken": "^9.0.2",
 		"morgan": "^1.10.1",
 		"multer": "^2.0.2",
+		"papaparse": "^5.5.3",
 		"samurai04db": "file:../Samurai04Db"
 	},
 	"devDependencies": {

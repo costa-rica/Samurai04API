@@ -19,6 +19,7 @@ import {
 import indexRouter from "./routes/index";
 import usersRouter from "./routes/users";
 import dataRouter from "./routes/data";
+import chatRouter from "./routes/chat";
 
 // Verify and create necessary directories first
 verifyCheckDirectoryExists();
@@ -38,6 +39,7 @@ app.use(
 );
 
 // Register routes
+app.use("/chat", chatRouter);
 app.use("/data", dataRouter);
 app.use("/users", usersRouter);
 app.use("/", indexRouter);
