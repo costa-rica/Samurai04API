@@ -279,6 +279,132 @@ curl --location 'http://localhost:3000/data/receive-user-data' \
 
 ---
 
+### GET /data/user-data-files-list
+
+Retrieve a list of all files uploaded by the authenticated user. This endpoint returns the names of all files stored in the user's data directory, excluding system files.
+
+**Authentication:** Required (JWT token)
+
+**Request Example:**
+```bash
+curl --location 'http://localhost:3000/data/user-data-files-list/' \
+--header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+```
+
+**Success Response (200 OK):**
+```json
+{
+  "result": true,
+  "files": [
+    "user_data.csv",
+    "sleep_data.csv",
+    "fitness_data_1.csv"
+  ]
+}
+```
+
+**Error Responses:**
+
+**401 Unauthorized - Invalid Token:**
+```json
+{
+  "result": false,
+  "message": "Unauthenticated or invalid token."
+}
+```
+
+**500 Internal Server Error - Directory Access Failed:**
+```json
+{
+  "result": false,
+  "message": "PATH_TO_USER_CONTEXT_DATA env var is not set."
+}
+```
+
+**500 Internal Server Error:**
+```json
+{
+  "result": false,
+  "message": "Internal server error",
+  "error": "Error message details"
+}
+```
+
+**Notes:**
+- Returns an array of filenames (not full paths)
+- Automatically filters out `.DS_Store` files (macOS system files)
+- Only shows files for the authenticated user
+- Files are returned in the order they appear in the directory
+
+---
+
+### DELETE /data/user-data/:filename
+
+Delete a specific file uploaded by the authenticated user. This endpoint removes both the file from the filesystem and its corresponding database record.
+
+**Authentication:** Required (JWT token)
+
+**URL Parameters:**
+- `filename` (required): The exact filename to delete (e.g., `user_data.csv`)
+
+**Request Example:**
+```bash
+curl --location --request DELETE 'http://localhost:3000/data/user-data/user_data.csv' \
+--header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+```
+
+**Success Response (200 OK):**
+```json
+{
+  "result": true,
+  "message": "File deleted successfully."
+}
+```
+
+**Error Responses:**
+
+**401 Unauthorized - Invalid Token:**
+```json
+{
+  "result": false,
+  "message": "Unauthenticated or invalid token."
+}
+```
+
+**404 Not Found - File Does Not Exist:**
+```json
+{
+  "result": false,
+  "message": "File not found."
+}
+```
+
+**500 Internal Server Error - Directory Access Failed:**
+```json
+{
+  "result": false,
+  "message": "PATH_TO_USER_CONTEXT_DATA env var is not set."
+}
+```
+
+**500 Internal Server Error:**
+```json
+{
+  "result": false,
+  "message": "Internal server error",
+  "error": "Error message details"
+}
+```
+
+**Notes:**
+- The filename parameter must match exactly (case-sensitive)
+- Only the authenticated user can delete their own files
+- Deletes both the physical file and the database record
+- If the file doesn't exist in the filesystem, a 404 error is returned
+- The operation is atomic - if the file deletion fails, the database record is not removed
+
+---
+
 ## Chat Routes
 
 ### POST /chat/langflow

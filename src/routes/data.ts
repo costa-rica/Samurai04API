@@ -92,4 +92,93 @@ router.post(
 	}
 );
 
+// GET /data/user-data-files-list
+router.get(
+	"/user-data-files-list/",
+	authenticateToken,
+	async (req: Request, res: Response) => {
+		console.log(`- in GET /data/user-data-files-list`);
+
+		try {
+			const user = req.user;
+			if (!user?.id) {
+				return res
+					.status(401)
+					.json({ result: false, message: "Unauthenticated or invalid token." });
+			}
+
+			const { ok, destPath, error } = await createUserDataDirectory(user);
+			if (!ok) {
+				return res.status(500).json({ result: false, message: error });
+			}
+
+			// Read files in the user data directory
+			const files = await fsp.readdir(destPath);
+
+			// Filter out .DS_Store files (macOS system files)
+			const csvFiles = files.filter((file) => !file.endsWith(".DS_Store"));
+
+			res.json({ result: true, files: csvFiles });
+		} catch (error) {
+			console.error("Error retrieving user data files list:", error);
+			res.status(500).json({
+				result: false,
+				message: "Internal server error",
+				error: error instanceof Error ? error.message : String(error),
+			});
+		}
+	}
+);
+
+// DELETE /data/user-data/:filename
+router.delete(
+	"/user-data/:filename",
+	authenticateToken,
+	async (req: Request, res: Response) => {
+		console.log(`- in DELETE /data/user-data/${req.params.filename}`);
+
+		try {
+			const { filename } = req.params;
+			const user = req.user;
+
+			if (!user?.id) {
+				return res
+					.status(401)
+					.json({ result: false, message: "Unauthenticated or invalid token." });
+			}
+
+			const { ok, destPath, error } = await createUserDataDirectory(user);
+
+			if (!ok) {
+				return res.status(500).json({ result: false, message: error });
+			}
+
+			const filePath = path.join(destPath, filename);
+
+			// Check if file exists
+			if (!fs.existsSync(filePath)) {
+				return res
+					.status(404)
+					.json({ result: false, message: "File not found." });
+			}
+
+			// Delete the file
+			await fsp.unlink(filePath);
+			console.log(`Deleted file: ${filePath}`);
+
+			// Delete the record from the database
+			await UserData.destroy({ where: { filename, userId: user.id } });
+
+			res.json({ result: true, message: "File deleted successfully." });
+		} catch (error) {
+			console.error("Error deleting file:", error);
+			res.status(500).json({
+				result: false,
+				message: "Internal server error",
+				error: error instanceof Error ? error.message : String(error),
+			});
+		}
+	}
+);
+
 export default router;
