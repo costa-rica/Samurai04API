@@ -19,10 +19,12 @@
 		"express": "^5.1.0",
 		"jsonwebtoken": "^9.0.2",
 		"morgan": "^1.10.1",
+		"multer": "^2.0.2",
 		"samurai04db": "file:../Samurai04Db"
 	},
 	"devDependencies": {
 		"@types/express": "^5.0.3",
+		"@types/multer": "^2.0.0",
 		"@types/node": "^24.3.1",
 		"nodemon": "^3.1.10",
 		"ts-node": "^10.9.2",

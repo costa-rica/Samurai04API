@@ -1,5 +1,13 @@
 import jwt from "jsonwebtoken";
 import { User } from "samurai04db";
+// Extend Request interface to include user property
+declare global {
+	namespace Express {
+		interface Request {
+			user?: any;
+		}
+	}
+}
 
 async function authenticateToken(req, res, next) {
 	const authHeader = req.headers["authorization"];
@@ -17,6 +25,4 @@ async function authenticateToken(req, res, next) {
 	});
 }
 
-export default {
-	authenticateToken,
-};
+export { authenticateToken };

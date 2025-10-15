@@ -18,6 +18,7 @@ import {
 
 import indexRouter from "./routes/index";
 import usersRouter from "./routes/users";
+import dataRouter from "./routes/data";
 
 // Verify and create necessary directories first
 verifyCheckDirectoryExists();
@@ -37,6 +38,7 @@ app.use(
 );
 
 // Register routes
+app.use("/data", dataRouter);
 app.use("/users", usersRouter);
 app.use("/", indexRouter);
 
