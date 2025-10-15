@@ -9,7 +9,7 @@ import morgan from "morgan";
 import cors from "cors";
 
 // ⬇️ Import your DB package (use the exact package.json "name")
-import { initModels, sequelize } from "typescriptdb";
+import { initModels, sequelize } from "samurai04db";
 // Import onStartUp functions
 import {
 	verifyCheckDirectoryExists,
@@ -21,6 +21,12 @@ import usersRouter from "./routes/users";
 
 // Verify and create necessary directories first
 verifyCheckDirectoryExists();
+
+// Middleware configuration (must be BEFORE routes)
+app.use(express.json()); // Parse JSON request bodies
+app.use(express.urlencoded({ extended: false })); // Parse URL-encoded bodies
+app.use(cookieParser()); // Parse cookies
+app.use(morgan("dev")); // HTTP request logging
 
 // CORS configuration (must be BEFORE routes)
 app.use(

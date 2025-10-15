@@ -1,6 +1,6 @@
 import fs from "fs";
 import bcrypt from "bcrypt";
-import { User } from "typescriptdb";
+import { User } from "samurai04db";
 
 export function verifyCheckDirectoryExists(): void {
 	// Add directory paths to check (and create if they don't exist)

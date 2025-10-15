@@ -24,8 +24,9 @@ npm start
 ### Entry Points
 
 - **src/app.ts**: Application configuration and initialization
+
   - Configures Express middleware (CORS, cookie-parser, morgan)
-  - Imports and initializes database models via `typescriptdb` package
+  - Imports and initializes database models via `samurai04db` package
   - Runs startup functions (`verifyCheckDirectoryExists`, `onStartUpCreateEnvUsers`)
   - Registers routes
   - Exports app instance for use by server.ts
@@ -39,12 +40,14 @@ npm start
 
 ### Database Integration
 
-This project uses a local package `typescriptdb` (file:../TypeScriptDb) which provides:
+This project uses a local package `samurai04db` (file:../Samurai04Db) which provides:
+
 - Sequelize models (e.g., `User` model)
 - Database initialization via `initModels()` and `sequelize` instance
 - The package is installed from a sibling directory, not npm
 
 Database initialization happens in `app.ts` during the `initializeApp()` async function:
+
 1. Models are initialized via `initModels()`
 2. Database is synced with `sequelize.sync()`
 3. Startup functions run after DB is ready
@@ -59,6 +62,7 @@ Database initialization happens in `app.ts` during the `initializeApp()` async f
 ### Routes
 
 Routes are registered in `app.ts`:
+
 - `/` - Index router (src/routes/index.ts)
 - `/users` - Users router (src/routes/users.ts)
 
@@ -71,6 +75,7 @@ The index route serves an HTML template from `src/templates/index.html`. After b
 ## Environment Variables
 
 Required/expected variables:
+
 - `PORT`: Server port (default: 3000)
 - `APP_NAME`: Application name for console logging (default: "ExpressAPI02")
 - `ADMIN_EMAIL`: JSON array of admin email addresses (e.g., `["admin@example.com"]`)
@@ -89,7 +94,7 @@ Required/expected variables:
 - **express**: v5.x (note: v5 has breaking changes from v4)
 - **bcrypt**: Password hashing for user creation
 - **dotenv**: Environment variable management (must be loaded first in app.ts)
-- **typescriptdb**: Local Sequelize package from sibling directory
+- **samurai04db**: Local Sequelize package from sibling directory
 - **morgan**: HTTP request logger
 - **cors**: CORS middleware with credentials support
 - **cookie-parser**: Cookie parsing middleware
